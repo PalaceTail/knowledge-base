@@ -1,0 +1,49 @@
+# .github/workflows/static.yml
+name: Deploy static content to Pages
+
+on:
+  # main ブランチにプッシュされた時に実行
+  push:
+    branches: ["main"]
+
+  # Actions タブから手動実行を可能にする
+  workflow_dispatch:
+
+# GitHub Pages へのデプロイに必要な権限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時実行制御: 同じグループの実行を1つに制限
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "## ✅ デプロイ完了" >> $GITHUB_STEP_SUMMARY
+          echo "- **サイトURL**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **デプロイ時刻**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行方法**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
