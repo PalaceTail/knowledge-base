@@ -13,7 +13,7 @@
     <!-- Favicon (if available) -->
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     
-    <!-- Open Graph meta tags for better social sharing -->
+    <!-- Open Graph meta tags -->
     <meta property="og:title" content="My Knowledge Base">
     <meta property="og:description" content="Published articles from my Logseq knowledge management system">
     <meta property="og:type" content="website">
@@ -25,30 +25,67 @@
     </header>
     
     <div class="stats">
-        <strong>1</strong> articles published • 
-        Last updated: <strong>2025-08-11 15:41 UTC</strong> • 
+        <strong id="article-count">1</strong> articles published • 
+        Last updated: <strong>2025-08-12 10:30 UTC</strong> • 
         Total words: <strong>10</strong>
     </div>
     
-    <main>
+    <!-- 検索・フィルタ機能 -->
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search articles..." />
+            <button id="clear-search">Clear</button>
+        </div>
         
-        <article class="article fade-in">
-            <h2>SamplePublicArticle</h2>
-            <div class="meta">
-                <div class="meta-item"><strong>📅 Published:</strong> 2025-08-11</div>
-                <div class="meta-item"><strong>✍️ Author:</strong> Your Name</div>
-                <div class="meta-item"><strong>📂 Category:</strong> general</div>
-                <div class="meta-item"><strong>⏱️ Read time:</strong> 1 min</div>
-                 • <strong>Tags:</strong> [[blog]] [[[[SamplePublicArticle]]]]
+        <div class="filters">
+            <div class="filter-group">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="general">general</option>
+                </select>
             </div>
-            <div class="summary">Brief description for social sharing and SEO</div>
-            <div class="content">- This is a test article written in Windows PC.</div>
+            
+            <div class="filter-group">
+                <label for="tag-filter">Tag:</label>
+                <select id="tag-filter">
+                    <option value="">All Tags</option>
+                    <option value="[[SamplePublicArticle">[[SamplePublicArticle</option>
+<option value="blog">blog</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 記事一覧 -->
+    <main id="articles-container">
+        
+        <article class="article-card" data-category="general" data-tags='["blog", "[[SamplePublicArticle"]'>
+            <h2><a href="articles/samplepublicarticle.html">SamplePublicArticle</a></h2>
+            <div class="meta">
+                <span class="date">📅 2025-08-12</span>
+                <span class="author">✍️ Your Name</span>
+                <span class="category">📂 general</span>
+                <span class="reading-time">⏱️ 1 min</span>
+            </div>
+            <div class="tags"><span class="tag">blog</span>, <span class="tag">[[SamplePublicArticle</span></div>
+            <p class="summary">Brief description for social sharing and SEO</p>
         </article>
     </main>
     
+    <div id="no-results" style="display: none;" class="no-results">
+        <p>No articles found matching your search criteria.</p>
+    </div>
+    
     <footer>
         <p>Generated from <strong>Logseq</strong> via <strong>GitHub Actions</strong></p>
-        <p><small>Powered by Python + PyYAML • CSS separated for better performance</small></p>
+        <p><small>Powered by Python + JavaScript • Enhanced with search functionality</small></p>
     </footer>
+    
+    <!-- 記事データをJavaScriptで利用 -->
+    <script>
+        window.articlesData = [{"title": "SamplePublicArticle", "summary": "Brief description for social sharing and SEO", "author": "Your Name", "category": "general", "tags": ["blog", "[[SamplePublicArticle"], "date": "2025-08-12", "url_slug": "samplepublicarticle", "content": "- This is a test article written in Windows PC."}];
+    </script>
+    <script src="assets/js/search.js"></script>
 </body>
 </html>

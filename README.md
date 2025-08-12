@@ -1,4 +1,4 @@
-# Knowledge Base
+# My Knowledge Base
 
 This repository contains published articles from a knowledge management system.
 
