@@ -1,270 +1,220 @@
-// Knowledge Base Search and Filter Functionality
-(function () {
-    'use strict';
+/**
+ * Logseq Knowledge Base - Search and Filter Functionality (修正版)
+ * タグ・カテゴリフィルタリング + 検索機能の実装
+ * フィルターリセット機能を修正
+ */
 
-    let articlesData = [];
-    let filteredArticles = [];
+// DOM elements
+let searchInput, categoryFilter, tagFilter, clearButton;
+let articlesContainer, noResults, articleCards;
+let originalArticles = [];
 
-    // DOM elements
-    const searchInput = document.getElementById('search-input');
-    const clearBtn = document.getElementById('clear-search');
-    const categoryFilter = document.getElementById('category-filter');
-    const tagFilter = document.getElementById('tag-filter');
-    const articlesContainer = document.getElementById('articles-container');
-    const articleCount = document.getElementById('article-count');
-    const noResults = document.getElementById('no-results');
+// 初期化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeElements();
+    setupEventListeners();
+    
+    // 初期データの保存
+    if (window.articlesData) {
+        originalArticles = window.articlesData;
+        console.log('Loaded articles:', originalArticles.length);
+    } else {
+        console.error('Articles data not found!');
+    }
+    
+    // 記事カードをキャッシュ
+    articleCards = Array.from(document.querySelectorAll('.article-card'));
+    console.log('Found article cards:', articleCards.length);
+});
 
-    // Initialize when DOM is loaded
-    document.addEventListener('DOMContentLoaded', function () {
-        // Get articles data from window object (set by Python script)
-        articlesData = window.articlesData || [];
-        filteredArticles = [...articlesData];
-
-        // Initialize event listeners
-        initializeEventListeners();
-
-        // Extract and populate filter options if not already done by Python
-        if (articlesData.length > 0 && categoryFilter.children.length <= 1) {
-            populateFilters();
-        }
-
-        console.log(`🔍 Search initialized with ${articlesData.length} articles`);
-
-        // Initial display update
-        updateDisplay();
-    });
-
-    function initializeEventListeners() {
-        if (searchInput) {
-            searchInput.addEventListener('input', debounce(handleSearch, 300));
-            searchInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') {
-                    clearSearch();
-                }
-            });
-        }
-
-        if (clearBtn) {
-            clearBtn.addEventListener('click', clearSearch);
-        }
-
-        if (categoryFilter) {
-            categoryFilter.addEventListener('change', handleFilter);
-        }
-
-        if (tagFilter) {
-            tagFilter.addEventListener('change', handleFilter);
+function initializeElements() {
+    searchInput = document.getElementById('search-input');
+    categoryFilter = document.getElementById('category-filter');
+    tagFilter = document.getElementById('tag-filter');
+    clearButton = document.getElementById('clear-search');
+    articlesContainer = document.getElementById('articles-container');
+    noResults = document.getElementById('no-results');
+    
+    // エラーチェック
+    const requiredElements = {
+        'search-input': searchInput,
+        'category-filter': categoryFilter,
+        'tag-filter': tagFilter,
+        'clear-search': clearButton,
+        'articles-container': articlesContainer,
+        'no-results': noResults
+    };
+    
+    for (const [id, element] of Object.entries(requiredElements)) {
+        if (!element) {
+            console.error(`Required element not found: ${id}`);
         }
     }
+}
 
-    function populateFilters() {
-        const categories = new Set();
-        const tags = new Set();
-
-        articlesData.forEach(article => {
-            if (article.category) {
-                categories.add(article.category);
-            }
-            if (article.tags && Array.isArray(article.tags)) {
-                article.tags.forEach(tag => tags.add(tag));
-            }
-        });
-
-        // Populate category filter
-        Array.from(categories).sort().forEach(category => {
-            const option = document.createElement('option');
-            option.value = category;
-            option.textContent = category;
-            categoryFilter.appendChild(option);
-        });
-
-        // Populate tag filter
-        Array.from(tags).sort().forEach(tag => {
-            const option = document.createElement('option');
-            option.value = tag;
-            option.textContent = tag;
-            tagFilter.appendChild(option);
-        });
+function setupEventListeners() {
+    // 検索入力
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(performSearch, 300));
     }
+    
+    // カテゴリフィルター
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', performSearch);
+    }
+    
+    // タグフィルター
+    if (tagFilter) {
+        tagFilter.addEventListener('change', performSearch);
+    }
+    
+    // クリアボタン
+    if (clearButton) {
+        clearButton.addEventListener('click', clearAllFilters);
+    }
+    
+    console.log('Event listeners setup complete');
+}
 
-    function handleSearch() {
-        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-        if (!query) {
-            filteredArticles = [...articlesData];
+function performSearch() {
+    const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedCategory = categoryFilter ? categoryFilter.value : '';
+    const selectedTag = tagFilter ? tagFilter.value : '';
+    
+    console.log('Performing search:', { searchQuery, selectedCategory, selectedTag });
+    
+    let visibleCount = 0;
+    
+    // すべての記事カードを処理
+    articleCards.forEach(card => {
+        const shouldShow = matchesFilters(card, searchQuery, selectedCategory, selectedTag);
+        
+        if (shouldShow) {
+            card.style.display = 'block'; // 明示的にblock表示
+            visibleCount++;
         } else {
-            filteredArticles = articlesData.filter(article => {
-                // Search in title
-                if (article.title && article.title.toLowerCase().includes(query)) {
-                    return true;
-                }
-
-                // Search in summary
-                if (article.summary && article.summary.toLowerCase().includes(query)) {
-                    return true;
-                }
-
-                // Search in content
-                if (article.content && article.content.toLowerCase().includes(query)) {
-                    return true;
-                }
-
-                // Search in author
-                if (article.author && article.author.toLowerCase().includes(query)) {
-                    return true;
-                }
-
-                // Search in tags
-                if (article.tags && Array.isArray(article.tags)) {
-                    return article.tags.some(tag =>
-                        tag.toLowerCase().includes(query)
-                    );
-                }
-
-                return false;
-            });
-        }
-
-        applyFilters();
-        updateDisplay();
-    }
-
-    function handleFilter() {
-        applyFilters();
-        updateDisplay();
-    }
-
-    function applyFilters() {
-        const selectedCategory = categoryFilter ? categoryFilter.value : '';
-        const selectedTag = tagFilter ? tagFilter.value : '';
-
-        let filtered = [...filteredArticles];
-
-        // Apply category filter
-        if (selectedCategory) {
-            filtered = filtered.filter(article =>
-                article.category === selectedCategory
-            );
-        }
-
-        // Apply tag filter
-        if (selectedTag) {
-            filtered = filtered.filter(article =>
-                article.tags && article.tags.includes(selectedTag)
-            );
-        }
-
-        filteredArticles = filtered;
-    }
-
-    function updateDisplay() {
-        const articleCards = document.querySelectorAll('.article-card');
-        let visibleCount = 0;
-
-        // Show/hide article cards based on filtered results
-        articleCards.forEach(card => {
-            const titleElement = card.querySelector('h2 a');
-            if (!titleElement) return;
-
-            const title = titleElement.textContent.trim();
-            const isVisible = filteredArticles.some(article =>
-                article.title === title
-            );
-
-            if (isVisible) {
-                card.style.display = 'block';
-                card.classList.add('fade-in');
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-                card.classList.remove('fade-in');
-            }
-        });
-
-        // Update article count
-        if (articleCount) {
-            articleCount.textContent = visibleCount;
-        }
-
-        // Show/hide no results message
-        if (articlesContainer && noResults) {
-            if (visibleCount === 0) {
-                articlesContainer.style.opacity = '0.5';
-                noResults.style.display = 'block';
-            } else {
-                articlesContainer.style.opacity = '1';
-                noResults.style.display = 'none';
-            }
-        }
-
-        // Announce to screen readers
-        announceResults(visibleCount);
-    }
-
-    function clearSearch() {
-        if (searchInput) searchInput.value = '';
-        if (categoryFilter) categoryFilter.value = '';
-        if (tagFilter) tagFilter.value = '';
-
-        filteredArticles = [...articlesData];
-        updateDisplay();
-
-        if (searchInput) {
-            searchInput.focus();
-        }
-    }
-
-    function announceResults(count) {
-        // Create or update screen reader announcement
-        let announcement = document.getElementById('search-announcement');
-        if (!announcement) {
-            announcement = document.createElement('div');
-            announcement.id = 'search-announcement';
-            announcement.setAttribute('aria-live', 'polite');
-            announcement.setAttribute('aria-atomic', 'true');
-            announcement.style.position = 'absolute';
-            announcement.style.left = '-10000px';
-            announcement.style.width = '1px';
-            announcement.style.height = '1px';
-            announcement.style.overflow = 'hidden';
-            document.body.appendChild(announcement);
-        }
-
-        announcement.textContent = `${count} article${count !== 1 ? 's' : ''} found`;
-    }
-
-    // Debounce function to limit search frequency
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function (e) {
-        // Focus search with Ctrl+K or Cmd+K
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-            e.preventDefault();
-            if (searchInput) {
-                searchInput.focus();
-                searchInput.select();
-            }
+            card.style.display = 'none';
         }
     });
+    
+    // 結果の表示/非表示を制御
+    updateResultsDisplay(visibleCount);
+    
+    console.log(`Search complete. Visible articles: ${visibleCount}/${articleCards.length}`);
+}
 
-    // Export for debugging
-    if (typeof window !== 'undefined') {
-        window.KnowledgeBaseSearch = {
-            getArticlesData: () => articlesData,
-            getFilteredArticles: () => filteredArticles,
-            search: handleSearch,
-            clearSearch: clearSearch
-        };
+function matchesFilters(card, searchQuery, selectedCategory, selectedTag) {
+    // カテゴリフィルター
+    if (selectedCategory) {
+        const cardCategory = card.getAttribute('data-category');
+        if (cardCategory !== selectedCategory) {
+            return false;
+        }
     }
-})();
+    
+    // タグフィルター
+    if (selectedTag) {
+        const cardTagsStr = card.getAttribute('data-tags');
+        let cardTags = [];
+        try {
+            cardTags = JSON.parse(cardTagsStr || '[]');
+        } catch (e) {
+            console.warn('Failed to parse tags for card:', cardTagsStr);
+            cardTags = [];
+        }
+        
+        if (!cardTags.includes(selectedTag)) {
+            return false;
+        }
+    }
+    
+    // 検索クエリ
+    if (searchQuery) {
+        const cardText = card.textContent.toLowerCase();
+        if (!cardText.includes(searchQuery)) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+function updateResultsDisplay(visibleCount) {
+    if (!articlesContainer || !noResults) return;
+    
+    if (visibleCount === 0) {
+        articlesContainer.style.display = 'none';
+        noResults.style.display = 'block';
+    } else {
+        articlesContainer.style.display = 'block';
+        noResults.style.display = 'none';
+    }
+    
+    // 記事数を更新
+    const articleCountElement = document.getElementById('article-count');
+    if (articleCountElement) {
+        articleCountElement.textContent = visibleCount.toString();
+    }
+}
+
+function clearAllFilters() {
+    console.log('Clearing all filters');
+    
+    // フィルター要素をリセット
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    if (categoryFilter) {
+        categoryFilter.value = '';
+    }
+    
+    if (tagFilter) {
+        tagFilter.value = '';
+    }
+    
+    // すべての記事を表示状態に戻す
+    articleCards.forEach(card => {
+        card.style.display = 'block';
+    });
+    
+    // 結果表示を更新
+    updateResultsDisplay(articleCards.length);
+    
+    console.log('All filters cleared, showing all articles');
+}
+
+// デバウンス機能（検索パフォーマンス向上）
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// デバッグ用関数
+window.debugFilters = function() {
+    console.log('=== Filter Debug Info ===');
+    console.log('Search input:', searchInput?.value);
+    console.log('Category filter:', categoryFilter?.value);
+    console.log('Tag filter:', tagFilter?.value);
+    console.log('Total article cards:', articleCards.length);
+    console.log('Visible articles:', articleCards.filter(card => 
+        card.style.display !== 'none').length);
+    console.log('Articles data:', originalArticles.length);
+    
+    // 各記事カードの状態をチェック
+    articleCards.forEach((card, index) => {
+        console.log(`Card ${index}:`, {
+            title: card.querySelector('h2')?.textContent?.trim(),
+            category: card.getAttribute('data-category'),
+            tags: card.getAttribute('data-tags'),
+            visible: card.style.display !== 'none'
+        });
+    });
+};
