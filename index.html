@@ -25,9 +25,9 @@
     </header>
     
     <div class="stats">
-        <strong id="article-count">1</strong> articles published • 
-        Last updated: <strong>2025-08-12 10:30 UTC</strong> • 
-        Total words: <strong>10</strong>
+        <strong id="article-count">3</strong> articles published • 
+        Last updated: <strong>2025-08-12 11:25 UTC</strong> • 
+        Total words: <strong>31</strong>
     </div>
     
     <!-- 検索・フィルタ機能 -->
@@ -50,7 +50,9 @@
                 <label for="tag-filter">Tag:</label>
                 <select id="tag-filter">
                     <option value="">All Tags</option>
-                    <option value="[[SamplePublicArticle">[[SamplePublicArticle</option>
+                    <option value="[[SamplePublicArticle_health">[[SamplePublicArticle_health</option>
+<option value="[[SamplePublicArticle_study">[[SamplePublicArticle_study</option>
+<option value="[[SamplePublicArticle_technology">[[SamplePublicArticle_technology</option>
 <option value="blog">blog</option>
                 </select>
             </div>
@@ -60,15 +62,37 @@
     <!-- 記事一覧 -->
     <main id="articles-container">
         
-        <article class="article-card" data-category="general" data-tags='["blog", "[[SamplePublicArticle"]'>
-            <h2><a href="articles/samplepublicarticle.html">SamplePublicArticle</a></h2>
+        <article class="article-card" data-category="general" data-tags='["blog", "[[SamplePublicArticle_technology"]'>
+            <h2><a href="articles/samplepublicarticle_technology.html">SamplePublicArticle_technology</a></h2>
             <div class="meta">
                 <span class="date">📅 2025-08-12</span>
                 <span class="author">✍️ Your Name</span>
                 <span class="category">📂 general</span>
                 <span class="reading-time">⏱️ 1 min</span>
             </div>
-            <div class="tags"><span class="tag">blog</span>, <span class="tag">[[SamplePublicArticle</span></div>
+            <div class="tags"><span class="tag">blog</span>, <span class="tag">[[SamplePublicArticle_technology</span></div>
+            <p class="summary">Brief description for social sharing and SEO</p>
+        </article>
+        <article class="article-card" data-category="general" data-tags='["blog", "[[SamplePublicArticle_health"]'>
+            <h2><a href="articles/samplepublicarticle_health.html">SamplePublicArticle_health</a></h2>
+            <div class="meta">
+                <span class="date">📅 2025-08-12</span>
+                <span class="author">✍️ Your Name</span>
+                <span class="category">📂 general</span>
+                <span class="reading-time">⏱️ 1 min</span>
+            </div>
+            <div class="tags"><span class="tag">blog</span>, <span class="tag">[[SamplePublicArticle_health</span></div>
+            <p class="summary">Brief description for social sharing and SEO</p>
+        </article>
+        <article class="article-card" data-category="general" data-tags='["blog", "[[SamplePublicArticle_study"]'>
+            <h2><a href="articles/samplepublicarticle_study.html">SamplePublicArticle_study</a></h2>
+            <div class="meta">
+                <span class="date">📅 2025-08-12</span>
+                <span class="author">✍️ Your Name</span>
+                <span class="category">📂 general</span>
+                <span class="reading-time">⏱️ 1 min</span>
+            </div>
+            <div class="tags"><span class="tag">blog</span>, <span class="tag">[[SamplePublicArticle_study</span></div>
             <p class="summary">Brief description for social sharing and SEO</p>
         </article>
     </main>
@@ -84,7 +108,7 @@
     
     <!-- 記事データをJavaScriptで利用 -->
     <script>
-        window.articlesData = [{"title": "SamplePublicArticle", "summary": "Brief description for social sharing and SEO", "author": "Your Name", "category": "general", "tags": ["blog", "[[SamplePublicArticle"], "date": "2025-08-12", "url_slug": "samplepublicarticle", "content": "- This is a test article written in Windows PC."}];
+        window.articlesData = [{"title": "SamplePublicArticle_technology", "summary": "Brief description for social sharing and SEO", "author": "Your Name", "category": "general", "tags": ["blog", "[[SamplePublicArticle_technology"], "date": "2025-08-12", "url_slug": "samplepublicarticle_technology", "content": "-\n- This is a test article written in Windows PC."}, {"title": "SamplePublicArticle_health", "summary": "Brief description for social sharing and SEO", "author": "Your Name", "category": "general", "tags": ["blog", "[[SamplePublicArticle_health"], "date": "2025-08-12", "url_slug": "samplepublicarticle_health", "content": "- This is a test article written in Windows PC."}, {"title": "SamplePublicArticle_study", "summary": "Brief description for social sharing and SEO", "author": "Your Name", "category": "general", "tags": ["blog", "[[SamplePublicArticle_study"], "date": "2025-08-12", "url_slug": "samplepublicarticle_study", "content": "- This is a test article written in Windows PC."}];
     </script>
     <script src="assets/js/search.js"></script>
 </body>
